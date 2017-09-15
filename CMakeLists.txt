@@ -10,4 +10,6 @@ add_executable(${PROJECT_NAME} main.cpp gem_manager.cpp gem.cpp)
 
 find_package(SFML REQUIRED graphics window system)
 
+include_directories(${SFML_INCLUDE_DIR})
+
 target_link_libraries(${PROJECT_NAME} ${SFML_LIBRARIES} ${SFML_DEPENDENCIES})
