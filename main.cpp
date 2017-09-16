@@ -30,8 +30,11 @@ int main()
 			}
 		}
 
+		gemManager.update();
+
 		window.draw(background);
 		gemManager.draw(window);
+		
 		window.display();
 	}
 		
