@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <SFML/Graphics.hpp>
 
 class Gem
@@ -13,14 +12,14 @@ public:
 
 	enum class Status : int
 	{
-		NONE, SELECTED, MATCH, DELETED
+		NEW, NONE, SELECTED, MATCH, DELETED
 	};
 
-	Gem(int x, int y, int col, int row, Color color, sf::Texture& texture);
+	Gem(int col, int row, Color color, sf::Texture& texture, Status status);
 	~Gem();
 
-	void draw(sf::RenderWindow& window);
-	bool checkHit(int px, int py);
+	void draw(sf::RenderWindow& window, const sf::Vector2f& margin);
+	bool checkHit(const sf::Vector2f& spos);
 	void swapTargets(Gem& other);
 	bool update();
 
@@ -30,20 +29,20 @@ public:
 	Status getStatus() const { return status; }
 	void setStatus(Status status) 
 	{
-		if (this->status == Status::DELETED) {
-			std::cout << "OPA\n";
-		}
+		if (this->status == Status::DELETED) return;
 		this->status = status;
 	}
 
-	static constexpr int size = 48;
+	static const sf::Vector2f size;
+	static constexpr int padding = 4;
 
 private:
-	int x, y, tx, ty, col, row;
-	sf::Sprite sprite;
-	Color      color;
-	Status     status;
-	int        alpha;
+	int          col, row;
+	sf::Vector2f pos;
+	sf::Vector2f target;
+	sf::Sprite   sprite;
+	Color        color;
+	Status       status;
+	int          alpha;
 
 };
-

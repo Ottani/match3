@@ -1,14 +1,9 @@
 #include <limits>
 #include <algorithm>
-#include <iostream>
-
-using std::get;
-using std::cout;
-
 #include "gem_manager.hpp"
 
 
-GemManager::GemManager(int marginX, int marginY) : marginX(marginX), marginY(marginY), moving(false), arranging(false)
+GemManager::GemManager(float marginX, float marginY) : margin(marginX, marginY), moving(false), arranging(false)
 {
 	// TODO use new c++ rng
 	srand(time(0));
@@ -25,7 +20,7 @@ void GemManager::reset()
 	gems.clear();
 	for (int r = 0; r < rows; ++r) {
 		for (int c = 0; c < cols; ++c) {
-			gems.emplace_back(marginX + (Gem::size+margin)*c, marginY + (Gem::size+margin)*r, c, r, static_cast<Gem::Color>(rand()%7), texture);
+			gems.emplace_back(c, r, static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NONE);
 		}
 	}
 	selected = std::numeric_limits<size_t>::max();
@@ -36,15 +31,16 @@ void GemManager::reset()
 void GemManager::draw(sf::RenderWindow& window)
 {
 	for (auto& g : gems) {
-		g.draw(window);
+		g.draw(window, margin);
 	}
 }
 
-void GemManager::click(const sf::Vector2i& pos)
+void GemManager::click(const sf::Vector2i& spos)
 {
 	if (moving || arranging) return;
+	const sf::Vector2f pos {spos.x - margin.x, spos.y - margin.y};
 	for (auto& gem : gems) {
-		if (gem.checkHit(pos.x, pos.y)) {
+		if (gem.checkHit(pos)) {
 			if (selected != std::numeric_limits<size_t>::max()) {
 				auto& other = gems[selected];
 				if ((abs(gem.getCol()-other.getCol()) + abs(gem.getRow()-other.getRow())) != 1) break;
@@ -56,7 +52,6 @@ void GemManager::click(const sf::Vector2i& pos)
 			} else {
 				selected = gem.getRow() * cols + gem.getCol();
 				gem.setStatus(Gem::Status::SELECTED);
-				cout << "selected " << selected << '\n';
 			}
 			break;
 		}
@@ -69,27 +64,28 @@ void GemManager::update()
 	for (auto& gem : gems) {
 		if (gem.update()) moving = true;
 	}
-	if(moving) return;
+	if(!moving) {
+		for (auto& gem : gems) {
+			if (gem.getStatus() == Gem::Status::NEW) gem.setStatus(Gem::Status::NONE);
+		}
+	
+		if (!arranging)	match();
+	}
 
-	if (!arranging)	match();
 	arranging = false;
-	for(auto gem = gems.rbegin(); gem != gems.rend(); ++gem) {
+	for(auto gem = gems.begin(); gem != gems.end(); ++gem) {
 		if (gem->getStatus() == Gem::Status::DELETED) {
 			if (gem->getRow() > 0) {
 				arranging = true;
-				if ((gem + cols)->getStatus() != Gem::Status::MATCH) {
-					std::iter_swap(gem, gem + cols);
-					gem->swapTargets(*(gem + cols));
-					break;
-				}
+				std::iter_swap(gem, gem - cols);
+				gem->swapTargets(*(gem - cols));
 			} else {
 				int c = gem->getCol();
 				int r = gem->getRow();
-				*gem = Gem(marginX + (Gem::size+margin)*c, marginY + (Gem::size+margin)*r, c, r, static_cast<Gem::Color>(rand()%7), texture);
+				*gem = Gem(c, r, static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NEW);
 			}
 		}
 	}
-	
 }
 
 bool GemManager::match()

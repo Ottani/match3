@@ -1,18 +1,17 @@
-#include <iostream>
-using std::cout;
-
 #include <SFML/Graphics.hpp>
-
 #include "gem.hpp"
 
-Gem::Gem(int x, int y, int col, int row, Color color, sf::Texture& texture)
-	: x(x), y(y), tx(x), ty(y), col(col), row(row), color(color), status(Status::NONE), alpha(255), sprite(texture)
+
+const sf::Vector2f Gem::size {48.0f, 48.0f};
+
+Gem::Gem(int col, int row, Color color, sf::Texture& texture, Status status)
+	: col(col), row(row), pos(float((Gem::size.x+padding)*col), float((Gem::size.y+padding)*row)),
+	target(pos), color(color), status(status), alpha(255), sprite(texture)
 {
+	
 	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, 0, 48, 48));
 	sprite.setColor(sf::Color(255, 255, 255, alpha));
-	sprite.setPosition(x, y);
-	//gems.move(offset.x-ts, offset.y-ts);
-	
+	sprite.setPosition(pos);
 }
 
 Gem::~Gem()
@@ -20,18 +19,21 @@ Gem::~Gem()
 
 }
 
-void Gem::draw(sf::RenderWindow& window)
+void Gem::draw(sf::RenderWindow& window, const sf::Vector2f& margin)
 {
-	sprite.setPosition(x, y);
+	if (status == Gem::Status::NEW) return;
+	sprite.setPosition(pos + margin);
 	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, (status==Status::SELECTED)?48:0, 48, 48));
 	sprite.setColor(sf::Color(255, 255, 255, alpha));
 	window.draw(sprite);
 }
 
-bool Gem::checkHit(int px, int py)
+bool Gem::checkHit(const sf::Vector2f& spos)
 {
 	if (status==Status::DELETED) return false;
-	return (px >= x && px <= (x+size) && py >= y && py <= (y+size));
+	//Rect (const Vector2< T > &position, const Vector2< T > &size)
+	return sf::Rect<float>(pos, size).contains(spos);
+	//return (px >= pos.x && px <= (pos.x+size) && py >= pos.y && py <= (pos.y+size));
 }
 
 void Gem::swapTargets(Gem& other)
@@ -39,11 +41,8 @@ void Gem::swapTargets(Gem& other)
 	std::swap(col, other.col);
 	std::swap(row, other.row);
 	
-	tx = other.x;
-	ty = other.y;
-	
-	other.tx = x;
-	other.ty = y;
+	target = sf::Vector2f(float((Gem::size.x+padding)*col), float((Gem::size.y+padding)*row));
+	other.target = sf::Vector2f(float((Gem::size.x+padding)*other.col), float((Gem::size.y+padding)*other.row));
 }
 
 bool Gem::update()
@@ -51,25 +50,23 @@ bool Gem::update()
 	if (status==Status::DELETED) return false;
 	if (status==Status::MATCH) {
 		alpha -= 10;
-		if (alpha <= 0) {
-			alpha = 0;
+		if (alpha <= 50) {
 			status = Status::DELETED;
 			return false;
 		}
 		return true;
 	}
 
-	auto move = [=](int& p, int t) -> bool
+	auto move = [=](float& p, float t) -> bool
 	{
 		if (p == t) return false;
 		if (p < t) {
-			p += std::min(5, t-p);
+			p += std::min(5.0f, t-p);
 		} else {
-			p -= std::min(5, p-t);
+			p -= std::min(5.0f, p-t);
 		}
-		//status = Status::NONE;
 		return true;
 	};
-	return move(x, tx) || move(y, ty);
+	return move(pos.x, target.x) || move(pos.y, target.y);
 }
 

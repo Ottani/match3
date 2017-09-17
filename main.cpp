@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-
 #include "gem_manager.hpp"
 
 int main()
@@ -12,9 +11,10 @@ int main()
 
 	sf::Sprite background(texBackground);
 
-	GemManager gemManager(15, 15);
+	GemManager gemManager(15.0f, 25.0f);
 	gemManager.reset();
 
+	// TODO resize event
 	while(window.isOpen()) {
 		sf::Event e;
 		while(window.pollEvent(e)) {
