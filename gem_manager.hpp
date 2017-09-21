@@ -21,13 +21,20 @@ public:
 	static constexpr int cols = 8;
 
 private:
+	// State or Status?
+	enum class State : int
+	{
+		WAITING, FIRST_SEL, SECOND_SEL, MOVING, ARRANGING
+	};
+
+	void setState(State newState);
 	bool match();
-	// is it a vector needed here?
+
 	vector<Gem>  gems;
 	sf::Texture  texture;
 	sf::Vector2f margin;
-	size_t       selected;
-	bool moving;
-	bool arranging;
+	size_t       sel1;
+	size_t       sel2;
+	State        state;
 
 };

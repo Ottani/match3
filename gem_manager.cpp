@@ -1,9 +1,9 @@
-#include <limits>
+#include <iostream>
 #include <algorithm>
 #include "gem_manager.hpp"
 
 
-GemManager::GemManager(float marginX, float marginY) : margin(marginX, marginY), moving(false), arranging(false)
+GemManager::GemManager(float marginX, float marginY) : margin(marginX, marginY), state(State::WAITING)
 {
 	// TODO use new c++ rng
 	srand(time(0));
@@ -23,9 +23,7 @@ void GemManager::reset()
 			gems.emplace_back(c, r, static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NONE);
 		}
 	}
-	selected = std::numeric_limits<size_t>::max();
-	moving = false;
-	arranging = false;
+	setState(State::WAITING);
 }
 
 void GemManager::draw(sf::RenderWindow& window)
@@ -37,21 +35,23 @@ void GemManager::draw(sf::RenderWindow& window)
 
 void GemManager::click(const sf::Vector2i& spos)
 {
-	if (moving || arranging) return;
+	if (state != State::WAITING && state != State::FIRST_SEL) return;
 	const sf::Vector2f pos {spos.x - margin.x, spos.y - margin.y};
 	for (auto& gem : gems) {
 		if (gem.checkHit(pos)) {
-			if (selected != std::numeric_limits<size_t>::max()) {
-				auto& other = gems[selected];
+			if (state == State::FIRST_SEL) {
+				sel2 = gem.getRow() * cols + gem.getCol();
+				auto& other = gems[sel1];
 				if ((abs(gem.getCol()-other.getCol()) + abs(gem.getRow()-other.getRow())) != 1) break;
 				std::iter_swap(&gem, &other);
 				other.swapTargets(gem);
 				gem.setStatus(Gem::Status::NONE);
 				other.setStatus(Gem::Status::NONE);
-				selected = std::numeric_limits<size_t>::max();
+				setState(State::SECOND_SEL);
 			} else {
-				selected = gem.getRow() * cols + gem.getCol();
+				sel1 = gem.getRow() * cols + gem.getCol();
 				gem.setStatus(Gem::Status::SELECTED);
+				setState(State::FIRST_SEL);
 			}
 			break;
 		}
@@ -60,30 +60,52 @@ void GemManager::click(const sf::Vector2i& spos)
 
 void GemManager::update()
 {
-	moving = false;
-	for (auto& gem : gems) {
-		if (gem.update()) moving = true;
-	}
-	if(!moving) {
-		for (auto& gem : gems) {
-			if (gem.getStatus() == Gem::Status::NEW) gem.setStatus(Gem::Status::NONE);
+	if (state == State::WAITING || state == State::SECOND_SEL) {
+		if (match()) {
+			setState(State::MOVING);
+		} else if (state == State::SECOND_SEL) {
+			auto& gem = gems[sel1];
+			auto& other = gems[sel2];
+			std::iter_swap(&gem, &other);
+			other.swapTargets(gem);
+			gem.setStatus(Gem::Status::NONE);
+			other.setStatus(Gem::Status::NONE);
+			setState(State::MOVING);
 		}
-	
-		if (!arranging)	match();
 	}
 
-	arranging = false;
-	for(auto gem = gems.begin(); gem != gems.end(); ++gem) {
-		if (gem->getStatus() == Gem::Status::DELETED) {
-			if (gem->getRow() > 0) {
-				arranging = true;
-				std::iter_swap(gem, gem - cols);
-				gem->swapTargets(*(gem - cols));
-			} else {
-				int c = gem->getCol();
-				int r = gem->getRow();
-				*gem = Gem(c, r, static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NEW);
+	if (state == State::MOVING) {
+		bool moving = false;
+		for (auto& gem : gems) {
+			if (gem.update()) moving = true;
+		}
+		if(!moving) {
+			for (auto& gem : gems) {
+				if (gem.getStatus() == Gem::Status::NEW) gem.setStatus(Gem::Status::NONE);
 			}
+			setState(State::ARRANGING);
+		}
+	}
+
+	if (state == State::ARRANGING) {
+		bool arranging = false;
+		for(auto gem = gems.begin(); gem != gems.end(); ++gem) {
+			if (gem->getStatus() == Gem::Status::DELETED) {
+				if (gem->getRow() > 0) {
+					arranging = true;
+					std::iter_swap(gem, gem - cols);
+					gem->swapTargets(*(gem - cols));
+				} else {
+					int c = gem->getCol();
+					int r = gem->getRow();
+					*gem = Gem(c, r, static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NEW);
+				}
+			}
+		}
+		if (!arranging) {
+			setState(State::WAITING);
+		} else {
+			setState(State::MOVING);
 		}
 	}
 }
@@ -112,4 +134,10 @@ bool GemManager::match()
 		}
 	}
 	return match;
+}
+
+void GemManager::setState(State newState)
+{
+	std::cout << "Changing state from " << static_cast<int>(state) << " to " << static_cast<int>(newState) << '\n';
+	state = newState;
 }
