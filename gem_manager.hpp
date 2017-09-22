@@ -24,7 +24,7 @@ private:
 	// State or Status?
 	enum class State : int
 	{
-		WAITING, FIRST_SEL, SECOND_SEL, MOVING, ARRANGING
+		WAITING, SELECTED, SWAPPING, MOVING, ARRANGING
 	};
 
 	void setState(State newState);

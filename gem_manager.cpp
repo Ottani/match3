@@ -35,23 +35,21 @@ void GemManager::draw(sf::RenderWindow& window)
 
 void GemManager::click(const sf::Vector2i& spos)
 {
-	if (state != State::WAITING && state != State::FIRST_SEL) return;
+	if (state != State::WAITING && state != State::SELECTED) return;
 	const sf::Vector2f pos {spos.x - margin.x, spos.y - margin.y};
 	for (auto& gem : gems) {
 		if (gem.checkHit(pos)) {
-			if (state == State::FIRST_SEL) {
+			if (state == State::SELECTED) {
 				sel2 = gem.getRow() * cols + gem.getCol();
 				auto& other = gems[sel1];
 				if ((abs(gem.getCol()-other.getCol()) + abs(gem.getRow()-other.getRow())) != 1) break;
 				std::iter_swap(&gem, &other);
 				other.swapTargets(gem);
-				gem.setStatus(Gem::Status::NONE);
-				other.setStatus(Gem::Status::NONE);
-				setState(State::SECOND_SEL);
+				setState(State::SWAPPING);
 			} else {
 				sel1 = gem.getRow() * cols + gem.getCol();
 				gem.setStatus(Gem::Status::SELECTED);
-				setState(State::FIRST_SEL);
+				setState(State::SELECTED);
 			}
 			break;
 		}
@@ -60,20 +58,34 @@ void GemManager::click(const sf::Vector2i& spos)
 
 void GemManager::update()
 {
-	if (state == State::WAITING || state == State::SECOND_SEL) {
+	if (state == State::WAITING) {
 		if (match()) {
-			setState(State::MOVING);
-		} else if (state == State::SECOND_SEL) {
-			auto& gem = gems[sel1];
-			auto& other = gems[sel2];
-			std::iter_swap(&gem, &other);
-			other.swapTargets(gem);
-			gem.setStatus(Gem::Status::NONE);
-			other.setStatus(Gem::Status::NONE);
 			setState(State::MOVING);
 		}
 	}
 
+	if (state == State::MOVING || state == State::SWAPPING) {
+		bool moving = false;
+		for (auto& gem : gems) {
+			Gem::Status status = gem.update();
+			if (status == Gem::Status::MOVING || status == Gem::Status::DELETING) moving = true;
+		}
+		if (!moving) {
+			if (state == State::SWAPPING) {
+				if (!match()) {
+					auto& gem = gems[sel1];
+					auto& other = gems[sel2];
+					std::iter_swap(&gem, &other);
+					other.swapTargets(gem);
+				}
+				setState(State::MOVING);
+			} else {
+				setState(State::WAITING);
+			}
+		}
+	}
+
+/*
 	if (state == State::MOVING) {
 		bool moving = false;
 		for (auto& gem : gems) {
@@ -107,7 +119,7 @@ void GemManager::update()
 		} else {
 			setState(State::MOVING);
 		}
-	}
+	} */
 }
 
 bool GemManager::match()
@@ -116,7 +128,7 @@ bool GemManager::match()
 	auto gem = gems.begin();
 	for (int r = 0; r < rows; ++r) {
 		for (int c = 0; c < cols; ++c) {
-			if (gem->getStatus() == Gem::Status::DELETED) continue;
+			if (gem->getStatus() == Gem::Status::DELETED || gem->getStatus() == Gem::Status::DELETING) continue;
 			if (c > 0 && c < (cols-1) && (gem+1)->getColor()==gem->getColor() && (gem-1)->getColor()==gem->getColor()) {
 				(gem-1)->setStatus(Gem::Status::MATCH);
 				(gem)->setStatus(Gem::Status::MATCH);

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 #include "gem_manager.hpp"
 
@@ -22,6 +23,7 @@ int main()
 				window.close();
 
 			if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Escape) window.close();
+			if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) std::cout << "------\n";
 			
 			if (e.type == sf::Event::MouseButtonPressed) {
 				if (e.mouseButton.button == sf::Mouse::Left) {

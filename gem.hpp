@@ -12,7 +12,7 @@ public:
 
 	enum class Status : int
 	{
-		NEW, NONE, SELECTED, MATCH, DELETED
+		NEW, NONE, SELECTED, MATCH, MOVING, DELETING, DELETED
 	};
 
 	Gem(int col, int row, Color color, sf::Texture& texture, Status status);
@@ -21,7 +21,7 @@ public:
 	void draw(sf::RenderWindow& window, const sf::Vector2f& margin);
 	bool checkHit(const sf::Vector2f& spos);
 	void swapTargets(Gem& other);
-	bool update();
+	Status update();
 
 	int getCol() const { return col; }
 	int getRow() const { return row; }
@@ -44,5 +44,7 @@ private:
 	Color        color;
 	Status       status;
 	int          alpha;
+	sf::Font     font; // this should go outside gem
+	sf::Text     text;
 
 };

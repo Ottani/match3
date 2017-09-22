@@ -1,3 +1,4 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 #include "gem.hpp"
 
@@ -12,6 +13,19 @@ Gem::Gem(int col, int row, Color color, sf::Texture& texture, Status status)
 	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, 0, 48, 48));
 	sprite.setColor(sf::Color(255, 255, 255, alpha));
 	sprite.setPosition(pos);
+
+	if (!font.loadFromFile("images/sansation.ttf")) {
+		std::cerr << "ERROR LOADING FONT\n";
+	}
+	text.setFont(font);
+	text.setCharacterSize(40);
+    text.setPosition(170.f, 150.f);
+    text.setFillColor(sf::Color::White);
+    text.setString("ola");
+	//text.setCharacterSize(11);
+	//text.setString("ola");
+	//text.setColor(sf::Color::Red);
+	//text.setStyle(sf::Text::Regular);
 }
 
 Gem::~Gem()
@@ -21,19 +35,32 @@ Gem::~Gem()
 
 void Gem::draw(sf::RenderWindow& window, const sf::Vector2f& margin)
 {
-	if (status == Gem::Status::NEW) return;
-	sprite.setPosition(pos + margin);
-	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, (status==Status::SELECTED)?48:0, 48, 48));
-	sprite.setColor(sf::Color(255, 255, 255, alpha));
-	window.draw(sprite);
+	if (status != Gem::Status::NEW) {
+		sprite.setPosition(pos + margin);
+		sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, (status==Status::SELECTED)?48:0, 48, 48));
+		sprite.setColor(sf::Color(255, 255, 255, alpha));
+		window.draw(sprite);
+	}
+	//text.setPosition(pos + margin);
+	/*switch(status) {
+		case Status::NEW:      text.setString("NEW"); break;
+		case Status::NONE:     text.setString("NONE"); break;
+		case Status::SELECTED: text.setString("SLCTED"); break;
+		case Status::MATCH:    text.setString("MATCH"); break;
+		case Status::MOVING:   text.setString("MOVE"); break;
+		case Status::DELETING: text.setString("DELETING"); break;
+		case Status::DELETED:  text.setString("DELETED"); break;
+		default: text.setString("??"); break;
+	}
+	
+	*/
+	window.draw(text);
 }
 
 bool Gem::checkHit(const sf::Vector2f& spos)
 {
 	if (status==Status::DELETED) return false;
-	//Rect (const Vector2< T > &position, const Vector2< T > &size)
 	return sf::Rect<float>(pos, size).contains(spos);
-	//return (px >= pos.x && px <= (pos.x+size) && py >= pos.y && py <= (pos.y+size));
 }
 
 void Gem::swapTargets(Gem& other)
@@ -43,30 +70,41 @@ void Gem::swapTargets(Gem& other)
 	
 	target = sf::Vector2f(float((Gem::size.x+padding)*col), float((Gem::size.y+padding)*row));
 	other.target = sf::Vector2f(float((Gem::size.x+padding)*other.col), float((Gem::size.y+padding)*other.row));
+	status = other.status = Status::MOVING;
 }
 
-bool Gem::update()
+Gem::Status Gem::update()
 {
-	if (status==Status::DELETED) return false;
-	if (status==Status::MATCH) {
-		alpha -= 10;
-		if (alpha <= 50) {
-			status = Status::DELETED;
-			return false;
-		}
-		return true;
-	}
-
-	auto move = [=](float& p, float t) -> bool
+	switch(status)
 	{
-		if (p == t) return false;
-		if (p < t) {
-			p += std::min(5.0f, t-p);
-		} else {
-			p -= std::min(5.0f, p-t);
+		case Status::MATCH:
+		{
+			status = Status::DELETING;
+			break;
 		}
-		return true;
-	};
-	return move(pos.x, target.x) || move(pos.y, target.y);
+		case Status::DELETING:
+		{
+			alpha -= 10;
+			if (alpha <= 50) {
+				status = Status::DELETED;
+			}
+			break;
+		}
+		case Status::MOVING:
+		{
+			auto move = [=](float& p, float t) -> bool
+			{
+				if (p == t) return false;
+				if (p < t) p += std::min(5.0f, t-p);
+				else       p -= std::min(5.0f, p-t);
+				return true;
+			};
+			if (!move(pos.x, target.x) && !move(pos.y, target.y))
+				status = Status::NONE;
+			break;
+		}
+		default:
+			break;
+	}
+	return status;
 }
-
