@@ -28,13 +28,19 @@ private:
 	};
 
 	void setState(State newState);
-	bool match();
+	int match();
+	int match3(Gem* gem1, Gem* gem2, Gem* gem3);
+	bool arrange();
+	void replaceDeleted();
 
 	vector<Gem>  gems;
 	sf::Texture  texture;
 	sf::Vector2f margin;
+	sf::Font     font;
+	sf::Text     scoreText;
 	size_t       sel1;
 	size_t       sel2;
 	State        state;
+	int          score;
 
 };

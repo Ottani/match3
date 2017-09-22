@@ -5,27 +5,16 @@
 
 const sf::Vector2f Gem::size {48.0f, 48.0f};
 
-Gem::Gem(int col, int row, Color color, sf::Texture& texture, Status status)
+Gem::Gem(int col, int row, Color color, sf::Texture& texture, Status status, const sf::Font &font)
 	: col(col), row(row), pos(float((Gem::size.x+padding)*col), float((Gem::size.y+padding)*row)),
-	target(pos), color(color), status(status), alpha(255), sprite(texture)
+	target(pos), color(color), status(status), alpha(255), sprite(texture), text("ola", font, 12)
 {
 	
 	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, 0, 48, 48));
 	sprite.setColor(sf::Color(255, 255, 255, alpha));
 	sprite.setPosition(pos);
 
-	if (!font.loadFromFile("images/sansation.ttf")) {
-		std::cerr << "ERROR LOADING FONT\n";
-	}
-	text.setFont(font);
-	text.setCharacterSize(40);
-    text.setPosition(170.f, 150.f);
-    text.setFillColor(sf::Color::White);
-    text.setString("ola");
-	//text.setCharacterSize(11);
-	//text.setString("ola");
-	//text.setColor(sf::Color::Red);
-	//text.setStyle(sf::Text::Regular);
+    text.setFillColor(sf::Color::Black);
 }
 
 Gem::~Gem()
@@ -41,19 +30,17 @@ void Gem::draw(sf::RenderWindow& window, const sf::Vector2f& margin)
 		sprite.setColor(sf::Color(255, 255, 255, alpha));
 		window.draw(sprite);
 	}
-	//text.setPosition(pos + margin);
-	/*switch(status) {
+	text.setPosition(pos + margin + sf::Vector2f(5, 20));
+	switch(status) {
 		case Status::NEW:      text.setString("NEW"); break;
 		case Status::NONE:     text.setString("NONE"); break;
-		case Status::SELECTED: text.setString("SLCTED"); break;
+		case Status::SELECTED: text.setString("SEL"); break;
 		case Status::MATCH:    text.setString("MATCH"); break;
 		case Status::MOVING:   text.setString("MOVE"); break;
-		case Status::DELETING: text.setString("DELETING"); break;
-		case Status::DELETED:  text.setString("DELETED"); break;
+		case Status::DELETING: text.setString("D'ING"); break;
+		case Status::DELETED:  text.setString("DEL"); break;
 		default: text.setString("??"); break;
 	}
-	
-	*/
 	window.draw(text);
 }
 
@@ -70,7 +57,8 @@ void Gem::swapTargets(Gem& other)
 	
 	target = sf::Vector2f(float((Gem::size.x+padding)*col), float((Gem::size.y+padding)*row));
 	other.target = sf::Vector2f(float((Gem::size.x+padding)*other.col), float((Gem::size.y+padding)*other.row));
-	status = other.status = Status::MOVING;
+	setStatus(Status::MOVING);
+	other.setStatus(Status::MOVING);
 }
 
 Gem::Status Gem::update()
@@ -79,18 +67,19 @@ Gem::Status Gem::update()
 	{
 		case Status::MATCH:
 		{
-			status = Status::DELETING;
+			setStatus(Status::DELETING);
 			break;
 		}
 		case Status::DELETING:
 		{
 			alpha -= 10;
 			if (alpha <= 50) {
-				status = Status::DELETED;
+				setStatus(Status::DELETED);
 			}
 			break;
 		}
 		case Status::MOVING:
+		case Status::DELETED:
 		{
 			auto move = [=](float& p, float t) -> bool
 			{
@@ -99,8 +88,8 @@ Gem::Status Gem::update()
 				else       p -= std::min(5.0f, p-t);
 				return true;
 			};
-			if (!move(pos.x, target.x) && !move(pos.y, target.y))
-				status = Status::NONE;
+			if (!move(pos.x, target.x) && !move(pos.y, target.y) && status == Status::MOVING)
+				setStatus(Status::NONE);
 			break;
 		}
 		default:
@@ -108,3 +97,10 @@ Gem::Status Gem::update()
 	}
 	return status;
 }
+
+void Gem::setStatus(Status status)
+{
+	if (this->status == Status::DELETED) return;
+	this->status = status;
+}
+

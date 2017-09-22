@@ -15,7 +15,7 @@ public:
 		NEW, NONE, SELECTED, MATCH, MOVING, DELETING, DELETED
 	};
 
-	Gem(int col, int row, Color color, sf::Texture& texture, Status status);
+	Gem(int col, int row, Color color, sf::Texture& texture, Status status, const sf::Font &font);
 	~Gem();
 
 	void draw(sf::RenderWindow& window, const sf::Vector2f& margin);
@@ -27,11 +27,7 @@ public:
 	int getRow() const { return row; }
 	Color getColor() const { return color; }
 	Status getStatus() const { return status; }
-	void setStatus(Status status) 
-	{
-		if (this->status == Status::DELETED) return;
-		this->status = status;
-	}
+	void setStatus(Status status);
 
 	static const sf::Vector2f size;
 	static constexpr int padding = 4;
@@ -44,7 +40,6 @@ private:
 	Color        color;
 	Status       status;
 	int          alpha;
-	sf::Font     font; // this should go outside gem
 	sf::Text     text;
 
 };
