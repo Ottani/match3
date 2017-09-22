@@ -1,0 +1,14 @@
+*              text=auto
+*.txt          text eol=lf
+*.cpp          text eol=lf
+*.c            text eol=lf
+*.hpp          text eol=lf
+*.h            text eol=lf
+*.md           text eol=lf
+
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+
+*.png binary
+*.jpg binary
+
