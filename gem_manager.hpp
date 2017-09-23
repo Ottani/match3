@@ -16,6 +16,7 @@ public:
 	void reset();
 	void update();
 	void draw(sf::RenderWindow& window);
+	bool findPossibleMatch(bool show);
 
 	static constexpr int rows = 8;
 	static constexpr int cols = 8;
@@ -32,6 +33,8 @@ private:
 	int match3(Gem* gem1, Gem* gem2, Gem* gem3);
 	bool arrange();
 	void replaceDeleted();
+	bool checkMatch3(Gem* gem1, Gem* gem2, Gem* gem3, bool show);
+	void clearPossibleMatch();
 
 	vector<Gem>  gems;
 	sf::Texture  texture;

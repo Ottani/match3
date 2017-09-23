@@ -57,6 +57,7 @@ void GemManager::click(const sf::Vector2i& spos)
 	for (auto& gem : gems) {
 		if (gem.checkHit(pos)) {
 			if (state == State::SELECTED) {
+				clearPossibleMatch();
 				sel2 = gem.getRow() * cols + gem.getCol();
 				auto& other = gems[sel1];
 				if ((abs(gem.getCol()-other.getCol()) + abs(gem.getRow()-other.getRow())) != 1) break;
@@ -186,3 +187,87 @@ void GemManager::setState(State newState)
 {
 	state = newState;
 }
+
+bool GemManager::findPossibleMatch(bool show)
+{
+	if (state != State::WAITING) return false;
+	clearPossibleMatch();
+	for (int r = rows-1; r >= 0; --r) {
+		for (int c = 0; c < cols; ++c) {
+			Gem* gem = &gems[r*cols + c];
+			Gem::Color color = gem->getColor();
+			//   3
+			// 1 x 2
+			//   3
+			if (c < cols-2 && (gem+2)->getColor() == color) {
+				if (r > 0 && checkMatch3(gem, gem+2, gem+1-cols, show)) return true;
+				if (r < rows-1 && checkMatch3(gem, gem+2, gem+1+cols, show)) return true;
+			}
+			//   1
+			// 3 x 3
+			//   2
+			if (r < rows-2 && (gem+2*cols)->getColor() == color) {
+				if (c > 0 && checkMatch3(gem, gem+2*cols, gem-1+cols, show)) return true;
+				if (c < cols-1 && checkMatch3(gem, gem+2*cols, gem+1+cols, show)) return true;
+			}
+			//     3
+			// 1 2 x 3
+			//     3
+			if (c < cols-2 && (gem+1)->getColor() == color) {
+				if (r > 0 && checkMatch3(gem, gem+1, gem+2-cols, show)) return true;
+				if (r < rows-1 && checkMatch3(gem, gem+1, gem+2+cols, show)) return true;
+				if (c < cols-3 && checkMatch3(gem, gem+1, gem+3, show)) return true;
+			}
+			//   3
+			// 3 x 2 1
+			//   3
+			if (c > 1 && (gem-1)->getColor() == color) {
+				if (r > 0 && checkMatch3(gem, gem-1, gem-2-cols, show)) return true;
+				if (r < rows-1 && checkMatch3(gem, gem-1, gem-2+cols, show)) return true;
+				if (c > 2 && checkMatch3(gem, gem-1, gem-3, show)) return true;
+			}
+			//   1
+			//   2
+			// 3 x 3
+			//   3
+			if (r < rows-2 && (gem+cols)->getColor() == color) {
+				if (c > 0 && checkMatch3(gem, gem+cols, gem-1+2*cols, show)) return true;
+				if (c < cols-1 && checkMatch3(gem, gem+cols, gem+1+2*cols, show)) return true;
+				if (r < rows-3 && checkMatch3(gem, gem+cols, gem+3*cols, show)) return true;
+			}
+			//   3
+			// 3 x 3
+			//   2
+			//   1
+			if (r > 1 && (gem-cols)->getColor() == color) {
+				if (c > 0 && checkMatch3(gem, gem-cols, gem-1-2*cols, show)) return true;
+				if (c < cols-1 && checkMatch3(gem, gem-cols, gem+1-2*cols, show)) return true;
+				if (r > 2 && checkMatch3(gem, gem-cols, gem-3*cols, show)) return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool GemManager::checkMatch3(Gem* gem1, Gem* gem2, Gem* gem3, bool show)
+{
+	//if (gem1->getColor() == gem2->getColor() && gem1->getColor() ==  gem3->getColor()) {
+	// check only gem1 and 3 as gem2 was already matched with gem1
+	if (gem1->getColor() == gem3->getColor()) {
+		if (show) {
+			gem1->setPossibleMatch(true);
+			gem2->setPossibleMatch(true);
+			gem3->setPossibleMatch(true);
+		}
+		return true;
+	}
+	return false;
+}
+
+void GemManager::clearPossibleMatch()
+{
+	for (auto &gem : gems)
+		gem.setPossibleMatch(false);
+
+}
+

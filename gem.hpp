@@ -28,6 +28,7 @@ public:
 	Color getColor() const { return color; }
 	Status getStatus() const { return status; }
 	void setStatus(Status status);
+	void setPossibleMatch(bool value) { possibleMatch = value; }
 
 	static const sf::Vector2f size;
 	static constexpr int padding = 4;
@@ -40,6 +41,5 @@ private:
 	Color        color;
 	Status       status;
 	int          alpha;
-	sf::Text     text;
-
+	bool         possibleMatch;
 };
