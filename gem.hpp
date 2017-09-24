@@ -15,10 +15,10 @@ public:
 		NEW, NONE, SELECTED, MATCH, MOVING, DELETING, DELETED
 	};
 
-	Gem(int col, int row, Color color, sf::Texture& texture, Status status, const sf::Font &font);
+	Gem(int col, int row, Color color, sf::Texture& texture, Status status);
 	~Gem();
 
-	void draw(sf::RenderWindow& window, const sf::Vector2f& margin);
+	void draw(sf::RenderWindow& window);
 	bool checkHit(const sf::Vector2f& spos);
 	void swapTargets(Gem& other);
 	Status update();
@@ -32,6 +32,7 @@ public:
 
 	static const sf::Vector2f size;
 	static constexpr int padding = 4;
+	static constexpr int gemSize = 64;
 
 private:
 	int          col, row;

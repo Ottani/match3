@@ -9,10 +9,11 @@ using std::vector;
 class GemManager
 {
 public:
-	GemManager(float marginX, float marginY);
+	GemManager();
 	~GemManager();
 	
-	void click(const sf::Vector2i& spos);
+	bool init();
+	void click(const sf::Vector2f& spos);
 	void reset();
 	void update();
 	void draw(sf::RenderWindow& window);
@@ -20,6 +21,8 @@ public:
 
 	static constexpr int rows = 8;
 	static constexpr int cols = 8;
+
+	int getScore() const { return score; }
 
 private:
 	// State or Status?
@@ -38,9 +41,6 @@ private:
 
 	vector<Gem>  gems;
 	sf::Texture  texture;
-	sf::Vector2f margin;
-	sf::Font     font;
-	sf::Text     scoreText;
 	size_t       sel1;
 	size_t       sel2;
 	State        state;

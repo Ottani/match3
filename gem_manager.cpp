@@ -1,24 +1,13 @@
 #include <iostream>
 #include <algorithm>
-#include <iomanip>
-#include <sstream>
+
 #include "gem_manager.hpp"
 
 
-GemManager::GemManager(float marginX, float marginY) : margin(marginX, marginY), state(State::WAITING), font(),
-		score(0), scoreText("Score: 000000", font, 20)
+GemManager::GemManager() : state(State::WAITING), score(0)
 {
 	// TODO use new c++ rng
 	srand(time(0));
-	if (!texture.loadFromFile("images/gems.png")) {
-		std::cerr << "ERROR LOADING IMAGE\n";
-		exit(1);
-	}
-	if (!font.loadFromFile("images/sansation.ttf")) {
-		std::cerr << "ERROR LOADING FONT\n";
-		exit(2);
-	}
-	scoreText.setFillColor(sf::Color::Black);
 }
 
 GemManager::~GemManager()
@@ -26,12 +15,23 @@ GemManager::~GemManager()
 
 }
 
+bool GemManager::init()
+{
+	if (!texture.loadFromFile("resources/gems.png")) {
+		std::cerr << "ERROR LOADING IMAGE\n";
+		return false;
+	}
+	reset();
+	return true;
+}
+
+
 void GemManager::reset()
 {
 	gems.clear();
 	for (int r = 0; r < rows; ++r) {
 		for (int c = 0; c < cols; ++c) {
-			gems.emplace_back(c, r, static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NONE, font);
+			gems.emplace_back(c, r, static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NONE);
 		}
 	}
 	score = 0;
@@ -41,21 +41,15 @@ void GemManager::reset()
 void GemManager::draw(sf::RenderWindow& window)
 {
 	for (auto& g : gems) {
-		g.draw(window, margin);
+		g.draw(window);
 	}
-	std::ostringstream sstr;
-	sstr << "Score: " << std::setw(6) << std::setfill('0') << score;
-	scoreText.setString(sstr.str());
-	scoreText.setPosition(580, 10);
-	window.draw(scoreText);
 }
 
-void GemManager::click(const sf::Vector2i& spos)
+void GemManager::click(const sf::Vector2f& spos)
 {
 	if (state != State::WAITING && state != State::SELECTED) return;
-	const sf::Vector2f pos {spos.x - margin.x, spos.y - margin.y};
 	for (auto& gem : gems) {
-		if (gem.checkHit(pos)) {
+		if (gem.checkHit(spos)) {
 			if (state == State::SELECTED) {
 				clearPossibleMatch();
 				sel2 = gem.getRow() * cols + gem.getCol();
@@ -178,7 +172,7 @@ void GemManager::replaceDeleted()
 {
 	for(auto gem = gems.begin(); gem != gems.end(); ++gem) {
 		if (gem->getStatus() == Gem::Status::DELETED) {
-			*gem = Gem(gem->getCol(), gem->getRow(), static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NEW, font);
+			*gem = Gem(gem->getCol(), gem->getRow(), static_cast<Gem::Color>(rand()%7), texture, Gem::Status::NEW);
 		}
 	}
 }
@@ -268,6 +262,4 @@ void GemManager::clearPossibleMatch()
 {
 	for (auto &gem : gems)
 		gem.setPossibleMatch(false);
-
 }
-

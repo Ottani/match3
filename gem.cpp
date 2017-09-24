@@ -3,13 +3,13 @@
 #include "gem.hpp"
 
 
-const sf::Vector2f Gem::size {48.0f, 48.0f};
+const sf::Vector2f Gem::size {(float)gemSize, (float)gemSize};
 
-Gem::Gem(int col, int row, Color color, sf::Texture& texture, Status status, const sf::Font &font)
+Gem::Gem(int col, int row, Color color, sf::Texture& texture, Status status)
 	: col(col), row(row), pos(float((Gem::size.x+padding)*col), float((Gem::size.y+padding)*row)),
 	target(pos), color(color), status(status), alpha(255), sprite(texture), possibleMatch(false)
 {
-	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, 0, 48, 48));
+	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*gemSize, 0, gemSize, gemSize));
 	sprite.setColor(sf::Color(255, 255, 255, alpha));
 	sprite.setPosition(pos);
 }
@@ -19,14 +19,14 @@ Gem::~Gem()
 
 }
 
-void Gem::draw(sf::RenderWindow& window, const sf::Vector2f& margin)
+void Gem::draw(sf::RenderWindow& window)
 {
 	if (status != Gem::Status::NEW) {
-		sprite.setPosition(pos + margin);
+		sprite.setPosition(pos);
 		if (possibleMatch)
-			sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, 96, 48, 48));
+			sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*gemSize, 2*gemSize, gemSize, gemSize));
 		else
-			sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*48, (status==Status::SELECTED)?48:0, 48, 48));
+			sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*gemSize, (status==Status::SELECTED)?gemSize:0, gemSize, gemSize));
 		sprite.setColor(sf::Color(255, 255, 255, alpha));
 		window.draw(sprite);
 	}
