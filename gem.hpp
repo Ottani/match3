@@ -7,7 +7,7 @@ class Gem
 public:
 	enum class Color : int
 	{
-		RED = 0, ORANGE = 1, YELLOW = 2, GREEN = 3, BLUE = 4, PURPLE = 5, WHITE = 6
+		RED = 0, ORANGE = 1, YELLOW = 2, GREEN = 3, BLUE = 4, PURPLE = 5, WHITE = 6, BOMB = 7
 	};
 
 	enum class Status : int
@@ -26,6 +26,7 @@ public:
 	int getCol() const { return col; }
 	int getRow() const { return row; }
 	Color getColor() const { return color; }
+	void setColor(Color color) { this->color = color; }
 	Status getStatus() const { return status; }
 	void setStatus(Status status);
 	void setPossibleMatch(bool value) { possibleMatch = value; }

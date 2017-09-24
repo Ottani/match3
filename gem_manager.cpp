@@ -35,6 +35,8 @@ void GemManager::reset()
 		}
 	}
 	score = 0;
+	// do not spawn a bomb too soon? change to a greater value
+	latestBomb = 0;
 	setState(State::WAITING);
 }
 
@@ -50,6 +52,9 @@ void GemManager::click(const sf::Vector2f& spos)
 	if (state != State::WAITING && state != State::SELECTED) return;
 	for (auto& gem : gems) {
 		if (gem.checkHit(spos)) {
+			if (gem.getColor() == Gem::Color::BOMB) {
+				return explode(&gem);
+			}
 			if (state == State::SELECTED) {
 				clearPossibleMatch();
 				sel2 = gem.getRow() * cols + gem.getCol();
@@ -73,6 +78,11 @@ void GemManager::update()
 	if (state == State::WAITING) {
 		for (auto& gem : gems) {
 			if (gem.getStatus() == Gem::Status::NEW) gem.setStatus(Gem::Status::NONE);
+		}
+		// Spawn a bomb every pointsPerBomb points
+		if (score / pointsPerBomb > latestBomb) {
+			latestBomb = score / pointsPerBomb;
+			gems[(rand()%rows)*cols + (rand()%cols)].setColor(Gem::Color::BOMB);
 		}
 		int m = match();
 		if (m > 0) {
@@ -262,4 +272,16 @@ void GemManager::clearPossibleMatch()
 {
 	for (auto &gem : gems)
 		gem.setPossibleMatch(false);
+}
+
+void GemManager::explode(Gem* gem)
+{
+	for(int r = gem->getRow()-1; r < gem->getRow()+2; ++r) {
+		for(int c = gem->getCol()-1; c < gem->getCol()+2; ++c) {
+			if (c >= 0 && c < cols && r >=0 and r < rows) {
+				gems[r * cols + c].setStatus(Gem::Status::MATCH);
+			}
+		}
+	}
+	setState(State::MOVING);
 }

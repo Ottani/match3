@@ -21,6 +21,7 @@ public:
 
 	static constexpr int rows = 8;
 	static constexpr int cols = 8;
+	static constexpr int pointsPerBomb = 50;
 
 	int getScore() const { return score; }
 
@@ -38,6 +39,7 @@ private:
 	void replaceDeleted();
 	bool checkMatch3(Gem* gem1, Gem* gem2, Gem* gem3, bool show);
 	void clearPossibleMatch();
+	void explode(Gem* gem);
 
 	vector<Gem>  gems;
 	sf::Texture  texture;
@@ -45,5 +47,6 @@ private:
 	size_t       sel2;
 	State        state;
 	int          score;
+	int          latestBomb;
 
 };
