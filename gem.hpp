@@ -44,4 +44,5 @@ private:
 	Status       status;
 	int          alpha;
 	bool         possibleMatch;
+	int          cyclesToDie;
 };

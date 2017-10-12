@@ -9,7 +9,7 @@ using std::vector;
 class GemManager
 {
 public:
-	GemManager();
+	GemManager(const sf::Font &font);
 	~GemManager();
 	
 	bool init();
@@ -29,7 +29,7 @@ private:
 	// State or Status?
 	enum class State : int
 	{
-		WAITING, SELECTED, SWAPPING, MOVING, ARRANGING
+		WAITING, SELECTED, SWAPPING, MOVING, ARRANGING, GAME_OVER
 	};
 
 	void setState(State newState);
@@ -43,6 +43,8 @@ private:
 
 	vector<Gem>  gems;
 	sf::Texture  texture;
+	sf::Text     text;
+	sf::Sprite   gameOverSp;
 	size_t       sel1;
 	size_t       sel2;
 	State        state;

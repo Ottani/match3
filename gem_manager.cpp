@@ -4,10 +4,12 @@
 #include "gem_manager.hpp"
 
 
-GemManager::GemManager() : state(State::WAITING), score(0)
+GemManager::GemManager(const sf::Font &font) : state(State::WAITING), score(0), text("Game Over!", font, 45)
 {
 	// TODO use new c++ rng
 	srand(time(0));
+	text.setFillColor(sf::Color::Red);
+	text.setPosition(20.0f, 20.0f);
 }
 
 GemManager::~GemManager()
@@ -21,6 +23,10 @@ bool GemManager::init()
 		std::cerr << "ERROR LOADING IMAGE\n";
 		return false;
 	}
+	gameOverSp.setTexture(texture);
+	gameOverSp.setTextureRect(sf::IntRect(0, 192, 500, 64));
+	gameOverSp.setColor(sf::Color(255, 255, 255, 255));
+	gameOverSp.setPosition(20.0f, 230.0f);
 	reset();
 	return true;
 }
@@ -44,6 +50,9 @@ void GemManager::draw(sf::RenderWindow& window)
 {
 	for (auto& g : gems) {
 		g.draw(window);
+	}
+	if (state == State::GAME_OVER) {
+		window.draw(gameOverSp);
 	}
 }
 
@@ -90,6 +99,10 @@ void GemManager::update()
 			score += m;
 		} else if (arrange()) {
 			setState(State::MOVING);
+		} else {
+			if (!findPossibleMatch(false)) {
+				setState(State::GAME_OVER);
+			}
 		}
 	}
 
@@ -195,11 +208,12 @@ void GemManager::setState(State newState)
 bool GemManager::findPossibleMatch(bool show)
 {
 	if (state != State::WAITING) return false;
-	clearPossibleMatch();
+	if(show) clearPossibleMatch();
 	for (int r = rows-1; r >= 0; --r) {
 		for (int c = 0; c < cols; ++c) {
 			Gem* gem = &gems[r*cols + c];
 			Gem::Color color = gem->getColor();
+			if (!show && color == Gem::Color::BOMB) return true;
 			//   3
 			// 1 x 2
 			//   3

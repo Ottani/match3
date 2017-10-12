@@ -9,7 +9,7 @@ using namespace sf;
 class Match
 {
 public:
-	Match() :font(), scoreText("Score: 000000", font, 20)
+	Match() :font(), scoreText("Score: 000000", font, 20), gemManager(font)
 	{
 		scoreText.setFillColor(Color::Black);
 	}
