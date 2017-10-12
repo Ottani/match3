@@ -278,7 +278,7 @@ void GemManager::explode(Gem* gem)
 {
 	for(int r = gem->getRow()-1; r < gem->getRow()+2; ++r) {
 		for(int c = gem->getCol()-1; c < gem->getCol()+2; ++c) {
-			if (c >= 0 && c < cols && r >=0 and r < rows) {
+			if (c >= 0 && c < cols && r >=0 && r < rows) {
 				gems[r * cols + c].setStatus(Gem::Status::MATCH);
 			}
 		}
