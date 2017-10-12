@@ -87,7 +87,7 @@ private:
 		window.draw(background);
 
 		std::ostringstream sstr;
-		sstr << "Score: " << std::setw(6) << std::setfill('0') << gemManager.getScore();
+		sstr << "Score:: " << std::setw(6) << std::setfill('0') << gemManager.getScore();
 		scoreText.setString(sstr.str());
 		scoreText.setPosition(window.getSize().x - 200, 25);
 		window.draw(scoreText);
