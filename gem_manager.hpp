@@ -18,6 +18,7 @@ public:
 	void update();
 	void draw(sf::RenderWindow& window);
 	bool findPossibleMatch(bool show);
+	bool spawnBomb();
 
 	static constexpr int rows = 8;
 	static constexpr int cols = 8;

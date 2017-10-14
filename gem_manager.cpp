@@ -79,11 +79,6 @@ void GemManager::update()
 		for (auto& gem : gems) {
 			if (gem.getStatus() == Gem::Status::NEW) gem.setStatus(Gem::Status::NONE);
 		}
-		// Spawn a bomb every pointsPerBomb points
-		if (score / pointsPerBomb > latestBomb) {
-			latestBomb = score / pointsPerBomb;
-			gems[(rand()%rows)*cols + (rand()%cols)].setColor(Gem::Color::BOMB);
-		}
 		int m = match();
 		if (m > 0) {
 			setState(State::MOVING);
@@ -284,4 +279,20 @@ void GemManager::explode(Gem* gem)
 		}
 	}
 	setState(State::MOVING);
+}
+
+// If the user has enough points, spawn a bomb onto the game board and
+// their score by [pointsPerBomb] and returns true. If the user does not
+// have enough points, does nothing and retuns false.
+bool GemManager::spawnBomb()
+{
+	if (score >= pointsPerBomb) {
+		latestBomb++;
+		gems[(rand()%rows)*cols + (rand()%cols)].setColor(Gem::Color::BOMB);
+		score -= pointsPerBomb;
+
+		return true;
+	}
+
+	return false;
 }
