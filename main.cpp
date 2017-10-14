@@ -61,6 +61,7 @@ public:
 					case Event::KeyReleased:
 						if (e.key.code == Keyboard::Escape) window.close();
 						if (e.key.code == Keyboard::Q) gemManager.findPossibleMatch(true);
+						if (e.key.code == Keyboard::W) gemManager.spawnBomb();
 						break;
 					case Event::MouseButtonPressed:
 						if (e.mouseButton.button == Mouse::Left) {
