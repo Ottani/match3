@@ -37,6 +37,7 @@ void GemManager::reset()
 	score = 0;
 	// do not spawn a bomb too soon? change to a greater value
 	latestBomb = 0;
+	usedTip = false;
 	setState(State::WAITING);
 }
 
@@ -88,6 +89,7 @@ void GemManager::update()
 		if (m > 0) {
 			setState(State::MOVING);
 			score += m;
+			usedTip = false;
 		} else if (arrange()) {
 			setState(State::MOVING);
 		}
@@ -103,6 +105,7 @@ void GemManager::update()
 			if (state == State::SWAPPING) {
 				int m = match();
 				score += m;
+				usedTip = false;
 				if (m == 0) {
 					auto& gem = gems[sel1];
 					auto& other = gems[sel2];
@@ -258,10 +261,15 @@ bool GemManager::checkMatch3(Gem* gem1, Gem* gem2, Gem* gem3, bool show)
 	//if (gem1->getColor() == gem2->getColor() && gem1->getColor() ==  gem3->getColor()) {
 	// check only gem1 and 3 as gem2 was already matched with gem1
 	if (gem1->getColor() == gem3->getColor()) {
-		if (show) {
+		if (show && (score >= pointsPerTip || usedTip)) {
 			gem1->setPossibleMatch(true);
 			gem2->setPossibleMatch(true);
 			gem3->setPossibleMatch(true);
+			if (!usedTip) {
+				score -= pointsPerTip;
+				usedTip = true;
+			}
+
 		}
 		return true;
 	}
