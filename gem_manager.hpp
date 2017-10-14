@@ -23,6 +23,7 @@ public:
 	static constexpr int rows = 8;
 	static constexpr int cols = 8;
 	static constexpr int pointsPerBomb = 50;
+	static constexpr int pointsPerTip = 50;
 
 	int getScore() const { return score; }
 
@@ -49,5 +50,5 @@ private:
 	State        state;
 	int          score;
 	int          latestBomb;
-
+	bool	     usedTip;
 };
