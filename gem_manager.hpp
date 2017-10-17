@@ -19,6 +19,7 @@ public:
 	void draw(sf::RenderWindow& window);
 	bool findPossibleMatch(bool show);
 	bool spawnBomb();
+	bool isLosing();
 
 	static constexpr int rows = 8;
 	static constexpr int cols = 8;
@@ -31,7 +32,7 @@ private:
 	// State or Status?
 	enum class State : int
 	{
-		WAITING, SELECTED, SWAPPING, MOVING, ARRANGING
+		WAITING, SELECTED, SWAPPING, MOVING, ARRANGING, LOSING
 	};
 
 	void setState(State newState);

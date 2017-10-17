@@ -9,9 +9,10 @@ using namespace sf;
 class Match
 {
 public:
-	Match() :font(), scoreText("Score: 000000", font, 20)
+	Match() :font(), scoreText("Score: 000000", font, 20), losingText("Game Over!", font, 80)
 	{
 		scoreText.setFillColor(Color::Black);
+		losingText.setFillColor(Color::Black);
 	}
 	~Match() {}
 
@@ -91,7 +92,13 @@ private:
 		sstr << "Score: " << std::setw(6) << std::setfill('0') << gemManager.getScore();
 		scoreText.setString(sstr.str());
 		scoreText.setPosition(window.getSize().x - 200, 25);
+		losingText.setPosition(window.getSize().x / 2, window.getSize().y / 2);
+
 		window.draw(scoreText);
+
+		if (gemManager.isLosing()) {
+			window.draw(losingText);
+		}
 
 		window.setView(gemView);
 		gemManager.draw(window);
@@ -107,6 +114,7 @@ private:
 	Sprite       background;
 	Font         font;
 	Text         scoreText;
+	Text         losingText;
 	GemManager   gemManager;
 };
 

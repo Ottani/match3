@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 
 #include "gem_manager.hpp"
@@ -80,6 +81,7 @@ void GemManager::update()
 		for (auto& gem : gems) {
 			if (gem.getStatus() == Gem::Status::NEW) gem.setStatus(Gem::Status::NONE);
 		}
+
 		int m = match();
 		if (m > 0) {
 			setState(State::MOVING);
@@ -87,7 +89,20 @@ void GemManager::update()
 			usedTip = false;
 		} else if (arrange()) {
 			setState(State::MOVING);
+		} else if (!findPossibleMatch(false) && state != State::MOVING && state != State::SWAPPING) {
+
+			//Enter this scope if there are no matches and the move/swap animations are done.
+			bool losing = true;
+
+			//Check for bombs
+			for (auto& gem : gems) {
+				if (gem.getColor() == Gem::Color::BOMB) losing = false;
+			}
+
+			//If no matches and no bombs, set state to losing
+			if (losing) setState(State::LOSING);
 		}
+
 	}
 
 	if (state == State::MOVING || state == State::SWAPPING) {
@@ -111,6 +126,14 @@ void GemManager::update()
 			} else {
 				setState(State::WAITING);
 			}
+		}
+	}
+
+	if (state == State::LOSING) {
+		for (auto& gem : gems) {
+			gem.setStatus(Gem::Status::DELETING);
+			gem.update();
+			
 		}
 	}
 }
@@ -303,4 +326,12 @@ bool GemManager::spawnBomb()
 	}
 
 	return false;
+}
+
+bool GemManager::isLosing()
+{
+	if (state == State::LOSING)
+		return true;
+	else
+		return false;
 }
