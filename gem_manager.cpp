@@ -4,24 +4,13 @@
 
 #include "gem_manager.hpp"
 
-
-GemManager::GemManager() : state(State::WAITING), score(0)
-{
-	// TODO use new c++ rng
-	srand(time(0));
-}
-
-GemManager::~GemManager()
-{
-
-}
-
 bool GemManager::init()
 {
 	if (!texture.loadFromFile("resources/gems.png")) {
 		std::cerr << "ERROR LOADING IMAGE\n";
 		return false;
 	}
+	srand(time(0));
 	reset();
 	return true;
 }

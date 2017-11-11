@@ -16,7 +16,7 @@ public:
 	};
 
 	Gem(int col, int row, Color color, sf::Texture& texture, Status status);
-	~Gem();
+	~Gem() = default;
 
 	void draw(sf::RenderWindow& window);
 	bool checkHit(const sf::Vector2f& spos);
@@ -42,6 +42,6 @@ private:
 	sf::Sprite   sprite;
 	Color        color;
 	Status       status;
-	int          alpha;
-	bool         possibleMatch;
+	int          alpha = 255;
+	bool         possibleMatch = false;
 };

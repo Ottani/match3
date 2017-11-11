@@ -9,8 +9,8 @@ using std::vector;
 class GemManager
 {
 public:
-	GemManager();
-	~GemManager();
+	GemManager() = default;
+	~GemManager() = default;
 	
 	bool init();
 	void click(const sf::Vector2f& spos);
@@ -48,8 +48,8 @@ private:
 	sf::Texture  texture;
 	size_t       sel1;
 	size_t       sel2;
-	State        state;
-	int          score;
+	State        state = State::WAITING;
+	int          score = 0;
 	int          latestBomb;
 	bool	     usedTip;
 };

@@ -7,16 +7,12 @@ const sf::Vector2f Gem::size {(float)gemSize, (float)gemSize};
 
 Gem::Gem(int col, int row, Color color, sf::Texture& texture, Status status)
 	: col(col), row(row), pos(float((Gem::size.x+padding)*col), float((Gem::size.y+padding)*row)),
-	target(pos), color(color), status(status), alpha(255), sprite(texture), possibleMatch(false)
+	color(color), status(status), sprite(texture)
 {
+	target = pos;
 	sprite.setTextureRect(sf::IntRect(static_cast<int>(color)*gemSize, 0, gemSize, gemSize));
 	sprite.setColor(sf::Color(255, 255, 255, alpha));
 	sprite.setPosition(pos);
-}
-
-Gem::~Gem()
-{
-
 }
 
 void Gem::draw(sf::RenderWindow& window)
@@ -88,6 +84,5 @@ Gem::Status Gem::update()
 
 void Gem::setStatus(Status status)
 {
-	if (this->status == Status::DELETED) return;
-	this->status = status;
+	if (this->status != Status::DELETED) this->status = status;
 }
